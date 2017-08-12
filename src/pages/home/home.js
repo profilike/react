@@ -1,55 +1,83 @@
-import React from 'react';
+import React, { PropTypes } from 'react';
 import Input from '../../components/ui/input/index';
+import Loader from '../../components/ui/loader/index';
 import { bindAll } from 'lodash';
-//import './styles.css';
+import { connect } from 'react-redux';
+import { 
+    addTodo,
+    likeTodo,
+    deleteTodo,
+    getTodos
+    } from './actions';
+import classnames from 'classnames';
+import { LS } from '../../utils/index';
+import './styles.less';
 
-export default class HomePage extends React.Component {
+class HomePage extends React.Component {
 
     static path = '/';
+    static propTypes = {
+      home: PropTypes.object.isRequired,
+      dispatch: PropTypes.func.isRequired
+    };
 
     constructor(props) {
         super(props);
         this.state = {
-            todoName: '',
-            todos: [{
-                id: 1,
-                name: 'Todo 1'
-            }],
-            error: ''
+            todoName: ''
         };
         bindAll(this, ['renderTodos', 'inputOnChange', 'addTodo' ]);
+
+        this.props.dispatch(getTodos() );
     }
 
     inputOnChange(value) {
         this.setState({ todoName: value });
     }
     addTodo() {
-        if (this.state.todoName === '') {
-            this.setState({ error: 'Поле не должно быть пустым' });
-            return;
-        }
-
-        const id = this.state.todos[this.state.todos.length - 1].id + 1;
-        const name = this.state.todoName;
-
-        const todos = this.state.todos;
-        todos.push({ id, name });
-
-        this.setState({ todos });
-        this.setState({ todoName: '', error: ''});
+        this.props.dispatch( addTodo(this.props.home.todos, this.state.todoName) );
+        this.setState({ todoName: ''});
     }
     renderTodos(item, idx) {
+        const todoClasses = classnames('b-home-todo', {
+            'is-liked' : item.liked
+        });
+        const btnClasses = classnames('btn', {
+            'active' : item.liked
+        });
         return (
-            <li key={ idx }>{ item.name }</li>
+            <li key={ idx }>
+                <span className={ todoClasses }>{ item.name }</span>
+                <button className='btn' onClick={ this.deleteTodo.bind(this, item) }><i className='glyphicon glyphicon-remove'></i></button>
+                <button className={ btnClasses } onClick={ this.likeTodo.bind(this, item) }><i className='glyphicon glyphicon-heart'></i></button>
+            </li>
         );
     }
+
+    likeTodo(todo) {
+      this.props.dispatch( likeTodo(todo) );  
+    }
+    deleteTodo(todo) {
+        this.props.dispatch( deleteTodo(todo) );
+    }
+
     render() {
-        const { todoName, todos, error } = this.state;
+        
+        const { todoName } = this.state;
+        const { todos, error, isLoading } = this.props.home;
+        LS.set('todos', todos);
         return (
             <div className='container b-home'>
                 <div className='col-xs-12'>
-                    <ul>
-                        { todos.map(this.renderTodos) }
+                    <ul>                       
+                        { isLoading
+                            ? <Loader />
+                            : todos.length !== 0
+                              ? todos.map(this.renderTodos)
+                              : 'Элементов нет'
+
+                        }
+
                     </ul>
                     <div className='col-xs-4'>
                        <Input
@@ -57,7 +85,7 @@ export default class HomePage extends React.Component {
                            value={ todoName }
                            error={ error }
                        />
-                        <button className='btn btn-primary' onClick={ this.addTodo } >Add todo</button>
+                        <button className='btn btn-primary b-home-submit' onClick={ this.addTodo } >Add todo</button>
                     </div>
                 </div>
 
@@ -66,3 +94,11 @@ export default class HomePage extends React.Component {
     }
 
 }
+
+function mapStateToProps(state) {
+    return {
+      home: state.home
+    };
+}
+
+export default connect(mapStateToProps)(HomePage);
