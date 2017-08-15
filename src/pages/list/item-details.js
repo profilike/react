@@ -39,7 +39,7 @@ export default class ItemDetails extends React.Component {
     render() {
         
         return (
-            <div class='row b-list-details'>
+            <div className='row b-list-details'>
                 <div className="col-xs-12">
                     <div className="panel panel-primary">
                         <div className="panel-heading">

@@ -23,6 +23,7 @@ class ListPage extends React.Component {
                     key={ idx }
                     id={ item.id }
                     name={ item.name }
+                    youtube = { item.youtube }
                 />
             );
     }
@@ -31,9 +32,9 @@ class ListPage extends React.Component {
         const { items } = this.props.list;
         return (
             <div className='row'>
-                <div className="col-xs-12">
-                    <h3>List</h3>
-                    <table className="table table-bordered table-hover">
+                <div className='col-xs-12'>
+                    <h3>Список видео</h3>
+                    <table className='table table-bordered table-hover'>
                         <thead>
                             <tr>
                                 <th>ID</th>
